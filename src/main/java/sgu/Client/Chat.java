@@ -20,6 +20,12 @@ public class Chat extends Application {
         stage.show();
     }
 
+    @Override
+    public void stop(){
+        System.out.println("Chat is closing");
+        Connection.close();
+    }
+
     public static void main(String[] args) {
         launch();
     }

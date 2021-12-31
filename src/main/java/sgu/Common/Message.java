@@ -1,4 +1,4 @@
-package sgu.Server.libs;
+package sgu.Common;
 
 import org.json.JSONException;
 import org.json.JSONObject;

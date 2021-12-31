@@ -1,4 +1,4 @@
-package sgu.Server.libs;
+package sgu.Common;
 
 public enum Command {
     REGISTER,

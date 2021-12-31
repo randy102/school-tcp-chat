@@ -1,12 +1,14 @@
-package sgu.Server.libs;
+package sgu.Server;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import sgu.Common.Command;
+import sgu.Common.Message;
 
 import java.io.*;
 import java.net.Socket;
 
-public class IO {
+public class Connection {
     BufferedReader in;
     BufferedWriter out;
     final Socket socket;
@@ -16,7 +18,7 @@ public class IO {
         void onRequest(Message message) throws IOException;
     }
 
-    public IO(Socket s, String id) throws IOException {
+    public Connection(Socket s, String id) throws IOException {
         this.in = new BufferedReader(new InputStreamReader(s.getInputStream()));
         this.out = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
         this.socket = s;
@@ -45,7 +47,7 @@ public class IO {
             do {
                 input = in.readLine();
                 if(input == null) break;
-                System.out.println("Server received: " + input + " from # Client " + id);
+                System.out.println("Received: " + input + " from " + id);
                 try {
                     JSONObject json = new JSONObject(input);
                     handler.onRequest(new Message(json));
@@ -58,9 +60,13 @@ public class IO {
         } catch (IOException | JSONException e) {
             System.out.println(e);
         } finally {
-            in.close();
-            out.close();
-            socket.close();
+            close();
         }
+    }
+
+    public void close() throws IOException {
+        in.close();
+        out.close();
+        socket.close();
     }
 }

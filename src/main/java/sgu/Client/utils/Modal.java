@@ -18,4 +18,11 @@ public class Modal {
         alert.showAndWait();
         return alert.getResult();
     }
+
+    public static void showInfo(String message){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

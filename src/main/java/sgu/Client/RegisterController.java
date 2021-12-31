@@ -2,7 +2,7 @@ package sgu.Client;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
-import sgu.Server.libs.Command;
+import sgu.Common.Command;
 
 public class RegisterController {
     @FXML

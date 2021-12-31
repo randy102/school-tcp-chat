@@ -1,32 +1,30 @@
 package sgu.Server;
 
-import sgu.Server.libs.Command;
-import sgu.Server.libs.IO;
-import sgu.Server.libs.Message;
+import sgu.Common.Command;
+import sgu.Common.Message;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Client implements Runnable {
-    IO io;
+public class Handler implements Runnable {
+    Connection connection;
     String userName;
-    Client partner;
+    Handler partner;
     boolean pendingInvite = false;
     Set<String> rejected = new HashSet<>();
 
-    public Client(Socket s, String id) throws IOException {
-        this.io = new IO(s, id);
+    public Handler(Socket s, String id) throws IOException {
+        this.connection = new Connection(s, id);
     }
 
     public void run() {
         try {
-            io.handle(new IO.Handler() {
+            connection.handle(new Connection.Handler() {
                 @Override
                 public void onRequest(Message message) throws IOException {
                     Command cmd = message.cmd();
-                    System.out.println(cmd);
                     switch (cmd) {
                         case REGISTER -> register(message.data());
                         case ACCEPT -> accept(message.data());
@@ -35,7 +33,7 @@ public class Client implements Runnable {
                         case MESSAGE -> message(message.data());
                         case CLOSE -> close();
                         default -> {
-                            io.send(Command.ERROR, "Invalid Command");
+                            connection.send(Command.ERROR, "Invalid Command");
                         }
                     }
                 }
@@ -49,22 +47,22 @@ public class Client implements Runnable {
         System.out.println("Register user: " + data);
         this.userName = data;
         if (Server.clients.containsKey(data)) {
-            this.io.send(Command.USERNAME_EXISTED);
+            this.connection.send(Command.USERNAME_EXISTED);
         } else {
             Server.clients.put(this.userName, this);
-            this.io.send(Command.REGISTER_SUCCESS, this.userName);
+            this.connection.send(Command.REGISTER_SUCCESS, this.userName);
             findPartner();
         }
     }
 
     public void findPartner() throws IOException {
         for (String userName : Server.waitingList) {
-            Client client = Server.clients.get(userName);
-            boolean notSelf = !client.userName.equals(this.userName);
-            boolean notPaired = client.partner == null;
-            boolean notRejected = !this.rejected.contains(client.userName);
+            Handler handler = Server.clients.get(userName);
+            boolean notSelf = !handler.userName.equals(this.userName);
+            boolean notPaired = handler.partner == null;
+            boolean notRejected = !this.rejected.contains(handler.userName);
             if (notSelf && notPaired && notRejected) {
-                this.invite(client);
+                this.invite(handler);
                 break;
             }
         }
@@ -74,13 +72,13 @@ public class Client implements Runnable {
     }
 
     public void addToWaiting() throws IOException {
-        io.send(Command.WAITING);
+        connection.send(Command.WAITING);
         Server.waitingList.add(userName);
     }
 
-    public void invite(Client target) throws IOException {
+    public void invite(Handler target) throws IOException {
         System.out.println(this.userName + " invite " + target.userName);
-        this.io.send(Command.INVITE, target.userName);
+        this.connection.send(Command.INVITE, target.userName);
         this.pendingInvite = true;
     }
 
@@ -91,18 +89,18 @@ public class Client implements Runnable {
     }
 
     public void accept(String userName) throws IOException {
-        Client target = Server.clients.get(userName);
+        Handler target = Server.clients.get(userName);
         this.pendingInvite = false;
 
         if (target == null || target.partner != null) {
-            this.io.send(Command.PAIR_FAIL);
+            this.connection.send(Command.PAIR_FAIL);
             findPartner();
         } else {
             this.partner = target;
             this.partner.partner = this;
 
-            this.io.send(Command.PAIRED, userName);
-            this.partner.io.send(Command.PAIRED, this.userName);
+            this.connection.send(Command.PAIRED, userName);
+            this.partner.connection.send(Command.PAIRED, this.userName);
 
             Server.waitingList.remove(this.userName);
             Server.waitingList.remove(userName);
@@ -110,14 +108,17 @@ public class Client implements Runnable {
     }
 
     public void message(String data) throws IOException {
-        this.partner.io.send(Command.MESSAGE, data);
+        if(this.partner != null)
+            this.partner.connection.send(Command.MESSAGE, data);
     }
 
     public void unPair() throws IOException {
-        this.rejected.add(this.partner.userName);
-        this.partner = null;
-        this.io.send(Command.UNPAIRED);
-        findPartner();
+        if(this.partner != null){
+            this.rejected.add(this.partner.userName);
+            this.partner = null;
+            this.connection.send(Command.UNPAIRED);
+            findPartner();
+        }
     }
 
     public void leave() throws IOException {
@@ -126,7 +127,9 @@ public class Client implements Runnable {
         this.unPair();
     }
 
-    public void close(){
+    public void close() throws IOException {
+        leave();
+        this.connection.close();
         Server.waitingList.remove(this.userName);
         Server.clients.remove(this.userName);
     }

@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-public class Client1 {
+public class CLIClient {
     private static String host = "localhost";
     private static int port = 1234;
     private static Socket socket;

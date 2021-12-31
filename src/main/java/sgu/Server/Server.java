@@ -13,7 +13,7 @@ public class Server {
     public static int port = 1234;
     public static int numThread = 2;
     private static ServerSocket server = null;
-    public static HashMap<String,Client> clients = new HashMap<>();
+    public static HashMap<String, Handler> clients = new HashMap<>();
     public static Set<String> waitingList = new HashSet<>();
 
     public static void main(String[] args) throws IOException {
@@ -26,8 +26,8 @@ public class Server {
             while(true) {
                 i++;
                 Socket socket = server.accept();
-                Client client = new Client(socket, Integer.toString(i));
-                executor.execute(client);
+                Handler handler = new Handler(socket, Integer.toString(i));
+                executor.execute(handler);
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

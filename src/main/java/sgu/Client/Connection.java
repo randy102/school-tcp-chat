@@ -3,8 +3,8 @@ package sgu.Client;
 
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
-import sgu.Server.libs.Command;
-import sgu.Server.libs.Message;
+import sgu.Common.Command;
+import sgu.Common.Message;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -54,6 +54,7 @@ public class Connection {
 
     public static void close(){
         try {
+            send(Command.CLOSE);
             in.close();
             out.close();
             socket.close();
