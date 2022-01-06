@@ -21,7 +21,7 @@ public class Handler implements Runnable {
 
     public void run() {
         try {
-            connection.handle(new Connection.Handler() {
+            connection.handle(new Connection.MessageHandler() {
                 @Override
                 public void onRequest(Message message) throws IOException {
                     Command cmd = message.cmd();

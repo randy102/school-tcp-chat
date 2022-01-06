@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 
 public class Server {
     public static int port = 1234;
-    public static int numThread = 2;
     private static ServerSocket server = null;
     public static HashMap<String, Handler> clients = new HashMap<>();
     public static Set<String> waitingList = new HashSet<>();

@@ -69,10 +69,7 @@ public class Connection {
         out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        ExecutorService executor = Executors.newCachedThreadPool();
         Thread thread = new Thread(new Handler(in, registerStage));
         thread.start();
-//        Handler handler = new Handler(in, registerStage);
-//        executor.execute(handler);
     }
 }

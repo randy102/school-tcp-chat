@@ -14,7 +14,7 @@ public class Connection {
     final Socket socket;
     final String id;
 
-    public interface Handler {
+    public interface MessageHandler {
         void onRequest(Message message) throws IOException;
     }
 
@@ -40,7 +40,7 @@ public class Connection {
         this.out.flush();
     }
 
-    public void handle(Handler handler) throws IOException {
+    public void handle(MessageHandler messageHandler) throws IOException {
         System.out.println("Client " + id + " joined!");
         try {
             String input = "";
@@ -50,7 +50,7 @@ public class Connection {
                 System.out.println("Received: " + input + " from " + id);
                 try {
                     JSONObject json = new JSONObject(input);
-                    handler.onRequest(new Message(json));
+                    messageHandler.onRequest(new Message(json));
                 } catch (IOException e){
                     this.send(new Message(Command.ERROR, e.getMessage()));
                 }
